@@ -1,0 +1,11 @@
+auth_service:
+  # active: keycloak
+  active: basic
+  keycloak:
+    base_url: "https://localhost:8080"
+    client_id: "test-service"
+    client_secret: "test"
+    realm: "master"
+  basic:
+    username: "username"
+    password: "password"

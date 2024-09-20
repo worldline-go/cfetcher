@@ -1,0 +1,127 @@
+server:
+  entrypoints:
+    web:
+      address: ":8080"
+  http:
+    middlewares:
+      health-vault:
+        hello:
+          message: '[]'
+          type: json
+      template-consul:
+        template:
+          template: |
+            [
+              {
+                "CreateIndex": 100,
+                "ModifyIndex": 200,
+                "LockIndex": 200,
+                "Key": "zip",
+                "Flags": 0,
+                "Value": "{{.body | crypto.Base64B}}",
+                "Session": "adf4238a-882b-9ddc-4a9d-5b6758e4159e"
+              }
+            ]
+          raw_body: true
+          apply_status_codes:
+            - 200
+          headers:
+            Content-Type: application/json
+      consul:
+        folder:
+          path: ./finops-consul
+          browse: false
+          spa: false
+          index: false
+          cache_regex:
+            - regex: .*
+              cache_control: no-store
+          file_path_regex:
+            - regex: "^/v1/kv/finops/(.*)$"
+              replacement: "/$1.yaml"
+      template-vault:
+        template:
+          template: |
+            {
+              "data": {
+                "data": {{ .body | codec.ByteToString }}
+              }
+            }
+          raw_body: true
+          apply_status_codes:
+            - 200
+          headers:
+            Content-Type: application/json
+      template-vault-404:
+        template:
+          template: ""
+          raw_body: true
+          apply_status_codes:
+            - 404
+          headers:
+            Content-Type: application/json
+      vault:
+        folder:
+          path: ./finops-vault
+          browse: false
+          spa: false
+          index: false
+          cache_regex:
+            - regex: .*
+              cache_control: no-store
+          file_path_regex:
+            - regex: "^/v1/finops/data/(.*)$"
+              replacement: "/$1.json"
+      vault-metadata-list:
+        hello:
+          message: |
+            {{- $path := printf "./finops-vault/%s" (trimPrefix "/v1/finops/metadata/" .path) -}}
+            {{- $exist := os.FileExists $path -}}
+            {{- if $exist -}}
+            {{- $folder := os.ReadDir $path -}}
+            {
+              "data": {
+                "keys": [
+                  {{- $first := true }}
+                  {{- range $folder }}
+                    {{- if $first}}{{$first = false}}{{else}},{{end}}
+                    "{{ trimSuffix ".json" .Name }}"
+                  {{- end }}
+                ]
+              }
+            }      
+            {{- else -}}
+            {
+              "data": {
+                "keys": []
+              }
+            }
+            {{- end }}
+          status_code: 200 # default is 200, int
+          # headers: {} # default is empty, map[string]string
+          type: string # default is string, it could be json, json-pretty, html, string
+          template: true # default is false, bool, use template
+          trust: true # default is false, bool, trust of the template dangerous functions
+    routers:
+      consul:
+        # host: "consul"
+        path: /v1/kv/finops/*
+        middlewares:
+          - template-consul
+          - consul
+      vault:
+        # host: "vault"
+        path: /v1/finops/data/*
+        middlewares:
+          - template-vault
+          - template-vault-404
+          - vault
+      vault-metadata:
+        # host: "vault"
+        path: /v1/finops/metadata/*
+        middlewares:
+          - vault-metadata-list
+      health:
+        path: /v1/health/service/vault
+        middlewares:
+          - health-vault
