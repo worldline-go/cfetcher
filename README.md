@@ -13,6 +13,16 @@ Our stack use vault for getting secrets and some generic configs. Before to vaul
 
 ## Usage
 
+```
+--consul-path string     consul path to load, multiple comma or space separated (CONFIG_CONSUL_PATH)
+--consul-prefix string   consul prefix to load
+--consul-save string     consul save to folder
+--consul-set string      consul path to set
+--vault-path string      vault path to load, multiple comma or space separated (CONFIG_VAULT_PATH)
+--vault-prefix string    vault prefix to load
+--vault-save string      vault save to folder
+```
+
 Run the following command to fetch all configs from vault and consul:
 
 ```sh
@@ -22,7 +32,7 @@ source env/local.sh
 # fetch all configs from vault
 cfetcher --vault-save=./out/${CONFIG_ENV}/finops-vault
 # fetch all configs from consul
-cfetcher --vault-save=./out/${CONFIG_ENV}/finops-vault
+cfetcher --consul-save=./out/${CONFIG_ENV}/finops-consul
 ```
 
 ### Build
