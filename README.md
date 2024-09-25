@@ -1,5 +1,9 @@
 # Config Fetcher
 
+[![License](https://img.shields.io/github/license/worldline-go/cfetcher?color=red&style=flat-square)](https://raw.githubusercontent.com/worldline-go/cfetcher/main/LICENSE)
+[![Coverage](https://img.shields.io/sonar/coverage/worldline-go_cfetcher?logo=sonarcloud&server=https%3A%2F%2Fsonarcloud.io&style=flat-square)](https://sonarcloud.io/summary/overall?id=worldline-go_cfetcher)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/worldline-go/cfetcher/test.yml?branch=main&logo=github&style=flat-square&label=ci)](https://github.com/worldline-go/cfetcher/actions)
+
 This repo help us to fetch all configs from vault and consul and put them in a nested directory.  
 With using this one we can mock all configs or change and copy them to another environment.
 
@@ -16,12 +20,12 @@ Run the following command to fetch all configs from vault and consul:
 source env/local.sh
 
 # fetch all configs from vault
-make run-vault
+cfetcher --vault-save=./out/${CONFIG_ENV}/finops-vault
 # fetch all configs from consul
-make run-consul
+cfetcher --vault-save=./out/${CONFIG_ENV}/finops-vault
 ```
 
-### With Binary
+### Build
 
 Create CLI binary:
 
